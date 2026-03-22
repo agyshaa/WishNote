@@ -220,8 +220,8 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
                                     key={p.value}
                                     onClick={() => setPriority(p.value)}
                                     className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-smooth ${priority === p.value
-                                            ? `${p.color} text-background`
-                                            : "bg-muted text-muted-foreground hover:text-foreground"
+                                        ? `${p.color} text-background`
+                                        : "bg-muted text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     {p.label}
