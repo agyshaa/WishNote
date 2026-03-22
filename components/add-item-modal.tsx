@@ -123,7 +123,7 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4 pt-2">
+                <div className="space-y-4 pt-2 overflow-y-auto max-h-[calc(90dvh-8rem)] sm:max-h-[calc(85vh-8rem)] pr-1">
                     {/* URL Input */}
                     <div className="space-y-2">
                         <Label htmlFor="url">Product URL</Label>
@@ -245,7 +245,7 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex justify-end gap-2 pt-2">
+                    <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-inherit pb-1">
                         <Button variant="outline" onClick={handleClose} className="bg-transparent">
                             Cancel
                         </Button>
