@@ -49,9 +49,7 @@
 		"home": "Accueil",
 		"profile": "Mon Espace",
 		"discover": "Découvrir",
-		"logout": "Se déconnecter",
-		"searchUsers": "Trouver des amis...",
-		"noUsersFound": "Aucun utilisateur trouvé"
+		"logout": "Se déconnecter"
 	},
 	"wishlist": {
 		"title": "Liste d'envies",

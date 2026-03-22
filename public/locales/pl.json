@@ -49,9 +49,7 @@
 		"home": "Strona główna",
 		"profile": "Mój profil",
 		"discover": "Odkrywaj",
-		"logout": "Wyloguj się",
-		"searchUsers": "Znajdź znajomych...",
-		"noUsersFound": "Nie znaleziono użytkowników"
+		"logout": "Wyloguj się"
 	},
 	"wishlist": {
 		"title": "Lista życzeń",

@@ -49,9 +49,7 @@
         "home": "Home",
         "profile": "My Space",
         "discover": "Discover",
-        "logout": "Log Out",
-        "searchUsers": "Find friends...",
-        "noUsersFound": "No users found"
+        "logout": "Log Out"
     },
     "wishlist": {
         "title": "Wishlist",

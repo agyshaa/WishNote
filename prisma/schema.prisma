@@ -3,12 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   name      String
   username  String   @unique
   email     String   @unique
@@ -21,10 +22,13 @@ model User {
 
   wishlists   Wishlist[]
   bookedItems WishlistItem[] @relation("BookedItems")
+
+  @@index([email])
+  @@index([username])
 }
 
 model Wishlist {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   name        String
   description String   @default("")
   emoji       String   @default("🎁")
@@ -37,10 +41,13 @@ model Wishlist {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   items WishlistItem[]
+
+  @@index([userId])
+  @@index([accessKey])
 }
 
 model WishlistItem {
-  id       String @id @default(uuid())
+  id       String @id @default(cuid())
   title    String
   price    Float  @default(0)
   oldPrice Float?
@@ -56,5 +63,8 @@ model WishlistItem {
 
   isBooked   Boolean @default(false)
   bookedById String?
-  bookedBy   User?   @relation("BookedItems", fields: [bookedById], references: [id])
+  bookedBy   User?   @relation("BookedItems", fields: [bookedById], references: [id], onDelete: SetNull)
+
+  @@index([wishlistId])
+  @@index([bookedById])
 }

@@ -20,7 +20,7 @@
 		"login": "Увійти",
 		"signup": "Реєстрація",
 		"email": "Електронна пошта",
-		"emailPlaceholder": "твоя@пошта.com",
+		"emailPlaceholder": "твоя@gmail.com",
 		"password": "Пароль",
 		"passwordPlaceholder": "•••••••••",
 		"name": "Твоє ім'я",
@@ -49,9 +49,7 @@
 		"home": "Головна",
 		"profile": "Мій простір",
 		"discover": "Цікаве",
-		"logout": "Вийти",
-		"searchUsers": "Знайти друзів...",
-		"noUsersFound": "Користувачів не знайдено"
+		"logout": "Вийти"
 	},
 	"wishlist": {
 		"title": "Вишліст",
