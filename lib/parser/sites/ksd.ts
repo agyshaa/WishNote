@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -65,6 +66,14 @@ export class KsdParser extends UniversalParser {
             console.log(`[KSD] ✅ Обрано стару ціну: ${finalOldPrice} (Нова: ${finalPrice})`)
         } else {
             console.log(`[KSD] ⚠️ Стару ціну не знайдено або вона менша/рівна новій ціні.`)
+        }
+
+        // SmartDiscount fallback
+        if (!finalOldPrice && finalPrice > 0) {
+            const smartResult = detectDiscount(html, finalPrice, "")
+            if (smartResult) {
+                finalOldPrice = smartResult.oldPrice
+            }
         }
 
         // ============ ІНШІ ДАНІ ============

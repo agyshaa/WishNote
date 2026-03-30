@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -37,15 +38,28 @@ export class FoxtrotParser extends UniversalParser {
 
         const candidates = new Set<number>();
 
-        // 1. Пошук по всіх тегах, що відповідають за закреслений текст або старі класи
+        // 1. Розширені селектори для старих цін (18+ варіантів)
         const selectors = [
             ".price__old .price__relevant",
             ".product-price__old",
             ".price-box__old",
             "div.price__old",
             "span[class*='old-price']",
+            "span[class*='original-price']",
+            "span[class*='compare-at']",
+            "span[class*='was-price']",
+            "span[class*='strikethrough']",
             "del",
-            "s"
+            "del span",
+            "s",
+            "s span",
+            "[style*='line-through']",
+            "[data-old-price]",
+            "[data-original-price]",
+            ".discount-was",
+            ".price-was",
+            ".product-price--old",
+            ".product-price--crossed",
         ];
 
         for (const selector of selectors) {
@@ -58,12 +72,19 @@ export class FoxtrotParser extends UniversalParser {
             });
         }
 
-        // 2. Пошук всередині JS-стану Foxtrot (window.__NUXT__ або подібне)
+        // 2. Розширені JS-паттерни (11 варіантів)
         const regexPatterns = [
             /"oldPrice"\s*:\s*(\d+)/g,
             /"priceOld"\s*:\s*(\d+)/g,
             /"basePrice"\s*:\s*(\d+)/g,
-            /data-old-price="(\d+)"/g
+            /"originalPrice"\s*:\s*(\d+)/g,
+            /data-old-price="(\d+)"/g,
+            /data-original-price="(\d+)"/g,
+            /"wasPriceText"\s*:\s*"(\d+)/g,
+            /price_was\s*=\s*(\d+)/g,
+            /"compareAtPrice"\s*:\s*(\d+)/g,
+            /old_price\s*:\s*(\d+)/g,
+            /"before_discount"\s*:\s*(\d+)/g,
         ];
 
         for (const pattern of regexPatterns) {
@@ -76,6 +97,15 @@ export class FoxtrotParser extends UniversalParser {
             }
         }
 
+        // 2b. Пошук через data атрибути (прямо з DOM)
+        const dataOldPrice = $("[data-old-price]").attr("data-old-price");
+        if (dataOldPrice) {
+            const price = cleanPrice(dataOldPrice);
+            if (price > currentPrice && price < currentPrice * 4) {
+                candidates.add(price);
+            }
+        }
+
         // Відбираємо кандидати, які СУВОРО більші за поточну ціну
         const validCandidates = Array.from(candidates).filter(p => p > currentPrice);
 
@@ -83,6 +113,12 @@ export class FoxtrotParser extends UniversalParser {
             // Якщо знайшли кілька варіантів, беремо найбільший (справжня ціна до знижки)
             const bestOldPrice = Math.max(...validCandidates);
             return bestOldPrice;
+        }
+
+        // SmartDiscount fallback if standard methods failed
+        const smartResult = detectDiscount(rawHtml, currentPrice, "")
+        if (smartResult) {
+            return smartResult.oldPrice
         }
 
         return undefined;

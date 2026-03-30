@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -13,7 +14,7 @@ export class YablokiParser extends UniversalParser {
         
         // Enhance with DOM-based oldPrice extraction
         const $ = cheerio.load(html)
-        const domOldPrice = this.extractOldPrice($, result.price)
+        const domOldPrice = this.extractOldPrice($, result.price, html)
         
         if (domOldPrice && domOldPrice > result.price) {
             result.oldPrice = domOldPrice
@@ -25,7 +26,7 @@ export class YablokiParser extends UniversalParser {
         return result
     }
 
-    private extractOldPrice($: cheerio.CheerioAPI, currentPrice: number): number | undefined {
+    private extractOldPrice($: cheerio.CheerioAPI, currentPrice: number, rawHtml: string): number | undefined {
         // YABLUKA selectors for price comparison
         const oldPriceSelectors = [
             // Strike-through tags
@@ -86,6 +87,12 @@ export class YablokiParser extends UniversalParser {
             })
         } else {
             console.log(`[YablokiParser] No <s> or <del> elements found`)
+        }
+
+        // SmartDiscount fallback
+        const smartResult = detectDiscount(rawHtml, currentPrice, "")
+        if (smartResult) {
+            return smartResult.oldPrice
         }
 
         return undefined

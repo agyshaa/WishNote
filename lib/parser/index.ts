@@ -1,5 +1,6 @@
 import type { ProductData, ProductParser } from "./types"
 import { fetchHtml, getStoreName, getCachedParse, setCachedParse } from "./utils"
+import { getFromRedisCache, saveToRedisCache } from "./redis-cache"
 import { UniversalParser } from "./universal"
 import { RozetkaParser } from "./sites/rozetka"
 import { BrainParser } from "./sites/brain"
@@ -13,6 +14,7 @@ import { KsdParser } from "./sites/ksd"
 import { AnswearParser } from "./sites/answear"
 import { FoxtrotParser } from "./sites/foxtrot"
 import { YablokiParser } from "./sites/yabloki"
+import { MoyoParser } from "./sites/moyo"
 
 /**
  * Get the appropriate parser for a URL based on domain.
@@ -32,6 +34,7 @@ function getParser(url: string): ProductParser {
     if (domain.includes("vivat")) return new VivatsParser()
     if (domain.includes("ksd")) return new KsdParser()
     if (domain.includes("answear")) return new AnswearParser()
+    if (domain.includes("moyo")) return new MoyoParser()
 
     return new UniversalParser()
 }
@@ -45,16 +48,34 @@ function getParser(url: string): ProductParser {
  * 3. Cache results so same URL doesn't need re-fetching
  */
 export async function parseProduct(url: string): Promise<ProductData> {
-    // Check cache first
+    // Check in-memory cache first (fastest)
     const cached = getCachedParse(url)
     if (cached) {
         return cached
     }
 
+    // Check Redis cache second (persistent but slower)
+    const redisCached = await getFromRedisCache(url)
+    if (redisCached) {
+        // Also restore to in-memory cache for faster future access
+        setCachedParse(url, redisCached)
+        return redisCached
+    }
+
     const domain = new URL(url).hostname.toLowerCase()
     
     // Sites that REQUIRE Puppeteer (JS-heavy, slow to render, or WAF protected)
-    const puppeteerRequiredSites = ["megasport", "comfy.ua", "rozetka"]
+    // Expanded list: sites that are known to block or have heavy JS
+    const puppeteerRequiredSites = [
+        "megasport",          // Heavy JS animations
+        "comfy.ua",           // Imperva WAF protected
+        "rozetka",            // Complex React app + WAF
+        "moyo.ua",            // Heavy JS + Cloudflare
+        "staff-clothes",      // Loading state initially
+        "jysk.ua",            // React SPA
+        "intertop.ua",        // Heavy images + JS
+        "answear",            // Complex product page JS
+    ]
     const requiresPuppeteer = puppeteerRequiredSites.some(site => domain.includes(site))
     
     let html = ""
@@ -91,8 +112,11 @@ export async function parseProduct(url: string): Promise<ProductData> {
         store_name: data.store_name || getStoreName(url),
     }
     
-    // Cache the result
+    // Cache the result in both in-memory and Redis
     setCachedParse(url, result)
+    await saveToRedisCache(url, result).catch(err => {
+        console.debug("[parser] Redis cache save failed (non-blocking):", err.message)
+    })
     
     return result
 }

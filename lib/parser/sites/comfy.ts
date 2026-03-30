@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -88,6 +89,14 @@ export class ComfyParser extends UniversalParser {
     ]
     let oldPrice = oldPriceCandidates.find(p => p !== undefined && p > 0)
     if (oldPrice && oldPrice <= price) oldPrice = undefined
+
+    // SmartDiscount fallback
+    if (!oldPrice && price > 0) {
+        const smartResult = detectDiscount(html, price, "")
+        if (smartResult) {
+            oldPrice = smartResult.oldPrice
+        }
+    }
 
     return {
         title: cleanText(title),

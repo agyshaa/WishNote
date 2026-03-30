@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, convertUsdToUah, calculateDiscountPercent } from "./utils"
+import { detectDiscount } from "./smart-discount"
 import type { ProductData, ProductParser } from "./types"
 
 /**
@@ -19,7 +20,7 @@ export class UniversalParser implements ProductParser {
         if (og && og.price > 0 && og.title) return og
 
         // Try DOM selectors as fallback
-        const dom = this.parseDom($, url)
+        const dom = this.parseDom($, url, html)
         if (dom && dom.price > 0 && dom.title) return dom
 
         // Fallback: just get the page title
@@ -38,7 +39,7 @@ export class UniversalParser implements ProductParser {
     /**
      * Try extracting from DOM with common selectors
      */
-    protected parseDom($: cheerio.CheerioAPI, url: string): ProductData | null {
+    protected parseDom($: cheerio.CheerioAPI, url: string, html?: string): ProductData | null {
         // Universal price selectors that work on many sites
         const priceSelectors = [
             "span[class*='price']",
@@ -55,6 +56,16 @@ export class UniversalParser implements ProductParser {
             "div[class*='price-']",
             ".product__price",
             ".product__sale-price",
+            "[class*='new-price']",
+            "[data-current-price]",
+            "[data-price]",
+            ".actual-price",
+            ".sell-price",
+            ".price-sell",
+            ".product-cost",
+            "span.big-price",
+            ".big-sale-price",
+            "meta[itemprop='price']",
         ]
 
         let price = 0
@@ -95,7 +106,7 @@ export class UniversalParser implements ProductParser {
         // Image - prefer product image over logo/icon
         let imageUrl = this.findProductImage($, url)
 
-        // Old price selectors (for discount calculation)
+        // Old price detection: Try traditional selectors first, then SmartDiscount
         let oldPrice: number | undefined = undefined
         const oldPriceSelectors = [
             "s",  // Strikethrough
@@ -106,6 +117,16 @@ export class UniversalParser implements ProductParser {
             "[class*='original-price']",
             "[class*='compare-at']",
             "[style*='line-through']",
+            "[class*='before-price']",
+            "[class*='was-price']",
+            "[class*='original']",
+            "span.crossed",
+            "span.strikethrough",
+            "[data-old-price]",
+            ".discount-original",
+            ".original",
+            "del span",
+            "s span",
         ]
 
         for (const sel of oldPriceSelectors) {
@@ -117,6 +138,29 @@ export class UniversalParser implements ProductParser {
                     oldPrice = p
                     break
                 }
+            }
+        }
+
+        // Також перевіримо через data атрибути
+        if (!oldPrice) {
+            const dataOldPrice = $("[data-old-price]").attr("data-old-price")
+            if (dataOldPrice) {
+                const p = cleanPrice(dataOldPrice)
+                if (p > price) {
+                    oldPrice = p
+                }
+            }
+        }
+
+        // If still not found, try SmartDiscount engine (multi-method detection)
+        if (!oldPrice && price > 0 && html) {
+            const smartResult = detectDiscount(html, price, url)
+            if (smartResult && smartResult.confidence >= 60) {
+                oldPrice = smartResult.oldPrice
+                console.log(
+                    `[SmartDiscount] 🎯 Found discount via ${smartResult.method} ` +
+                    `(confidence: ${smartResult.confidence}%, -${smartResult.discountPercent}%)`
+                )
             }
         }
 

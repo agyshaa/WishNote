@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -7,6 +8,18 @@ import { UniversalParser } from "../universal"
  * Answear parser (answear.com, answear.ua)
  */
 export class AnswearParser extends UniversalParser {
+    /**
+     * Clean element text by removing style and script tags
+     */
+    private cleanElementText($: cheerio.CheerioAPI, selector: string): string {
+        const elem = $(selector).first()
+        if (!elem.length) return ""
+        
+        const cloned = elem.clone()
+        cloned.find("style, script").remove()
+        return cloned.text().trim()
+    }
+
     parse(url: string, html: string): ProductData {
         const $ = cheerio.load(html)
 
@@ -16,10 +29,10 @@ export class AnswearParser extends UniversalParser {
             ldData = super.parse(url, html)
         } catch {}
 
-        // Title
-        const title = $("h1").first().text().trim() ||
-                     $("[class*='product-name']").first().text().trim() ||
-                     $("[data-testid*='product-name']").first().text().trim() ||
+        // Title - use cleaned text to avoid capturing CSS
+        const title = this.cleanElementText($, "h1") ||
+                     this.cleanElementText($, "[class*='product-name']") ||
+                     this.cleanElementText($, "[data-testid*='product-name']") ||
                      ldData.title ||
                      ""
 
@@ -74,6 +87,14 @@ export class AnswearParser extends UniversalParser {
                     console.log(`[Answear] Found oldPrice ${p} with selector: ${sel}`)
                     break
                 }
+            }
+        }
+
+        // SmartDiscount fallback
+        if (!oldPrice && domPrice > 0) {
+            const smartResult = detectDiscount(html, domPrice, "")
+            if (smartResult) {
+                oldPrice = smartResult.oldPrice
             }
         }
 

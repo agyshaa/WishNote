@@ -10,39 +10,62 @@
  */
 
 // Popular User-Agents that don't trigger bot detection
+// Включає актуальні версії переглядачів (2026)
 const USER_AGENTS = [
+    // Chrome desktop
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    
+    // Chrome mobile
+    "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
+    
+    // Safari
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
     "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+    
+    // Firefox
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
     "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7; rv:125.0) Gecko/20100101 Firefox/125.0",
+    
+    // Edge
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0",
+    
+    // Samsung Internet
+    "Mozilla/5.0 (Linux; Android 13; SAMSUNG SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/24.0 Chrome/125.0.0.0 Mobile Safari/537.36",
 ]
 
 // Common browser headers that make requests look legitimate
 const ACCEPT_LANGUAGE_VARIANTS = [
     "uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7",
-    "en-US,en;q=0.9",
+    "en-US,en;q=0.9,uk;q=0.8",
     "uk;q=0.9,en;q=0.8",
-    "pl-PL,pl;q=0.9,en;q=0.8",
-    "ru-RU,ru;q=0.9,en;q=0.8",
+    "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
+    "ru-RU,ru;q=0.9,en-US;q=0.8",
+    "de-DE,de;q=0.9,en-US;q=0.8",
 ]
 
 const ACCEPT_ENCODINGS = [
     "gzip, deflate, br",
     "gzip, deflate",
+    "br;q=1.0, gzip;q=0.8, *;q=0.1",
 ]
 
+// Рефереры містять також українські джерела
 const REFERERS = [
     "https://www.google.com/",
+    "https://www.google.com.ua/",
+    "https://www.google.co.uk/",
     "https://www.bing.com/",
     "https://duckduckgo.com/",
     "https://www.instagram.com/",
     "https://www.facebook.com/",
     "https://www.reddit.com/",
     "https://www.youtube.com/",
+    "https://www.yandex.ua/",
+    "https://www.twitter.com/",
 ]
 
 let lastRequestTime = 0
@@ -156,8 +179,8 @@ export async function rateLimitedDelay(url: string, attempt: number = 0): Promis
     }
 
     // Check per-domain rate limit: max 5 requests per minute per domain
-    // For aggressive sites: max 3 requests per minute
-    const maxPerDomain = isAggressive ? 3 : 5
+    // For aggressive sites: max 4 requests per minute (relaxed from 3 after WAF improvements)
+    const maxPerDomain = isAggressive ? 4 : 5
     if (perDomainRequestCounts[domain] >= maxPerDomain) {
         const resetTime = perDomainLastTime[domain] + 60000 - now
         if (resetTime > 0) {

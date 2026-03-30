@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -20,7 +21,7 @@ export class BrainParser extends UniversalParser {
 
         const title = this.extractTitle($) || ldData.title || ""
         const domPrice = this.extractPrice($)
-        const domOldPrice = this.extractOldPrice($, domPrice)
+        const domOldPrice = this.extractOldPrice($, domPrice, html)
         const imageUrl = this.extractImage($) || ldData.image_url || ""
         const description = this.extractDescription($) || ldData.description || ""
 
@@ -44,7 +45,7 @@ export class BrainParser extends UniversalParser {
         }
     }
 
-    private extractOldPrice($: cheerio.CheerioAPI, currentPrice: number): number | undefined {
+    private extractOldPrice($: cheerio.CheerioAPI, currentPrice: number, rawHtml: string): number | undefined {
         // Найточніші селектори Brain для старої ціни
         const selectors = [
             ".br-pr-op",
@@ -68,6 +69,12 @@ export class BrainParser extends UniversalParser {
                     }
                 }
             }
+        }
+
+        // SmartDiscount fallback
+        const smartResult = detectDiscount(rawHtml, currentPrice, "")
+        if (smartResult) {
+            return smartResult.oldPrice
         }
 
         console.log(`[BrainParser] No oldPrice found`)

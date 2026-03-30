@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -115,6 +116,12 @@ export class IntertopParser extends UniversalParser {
                     return price
                 }
             }
+        }
+        
+        // SmartDiscount fallback
+        const smartResult = detectDiscount(html, 0, "")
+        if (smartResult) {
+            return smartResult.oldPrice
         }
         
         return undefined

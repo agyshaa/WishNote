@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, convertUsdToUah, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -25,12 +26,12 @@ export class ZakolotParser extends UniversalParser {
 
         // Витяг назви з різних джерел
         title = $("h1").first().text().trim() ||
-                $("h2").first().text().trim() ||
-                $(".product-title").first().text().trim() ||
-                $("[class*='ProductTitle']").first().text().trim() ||
-                $("title").text().split("|")[0].trim() ||
-                ldData.title ||
-                ""
+            $("h2").first().text().trim() ||
+            $(".product-title").first().text().trim() ||
+            $("[class*='ProductTitle']").first().text().trim() ||
+            $("title").text().split("|")[0].trim() ||
+            ldData.title ||
+            ""
 
         // Витяг ціни - спробуємо всі можливі селектори
         const priceSelectors = [
@@ -53,12 +54,12 @@ export class ZakolotParser extends UniversalParser {
         for (const selector of priceSelectors) {
             if (attempts > 20) break
             const elements = $(selector)
-            
+
             for (let i = 0; i < Math.min(elements.length, 5); i++) {
                 const elem = $(elements[i]).clone()
                 // Strip out old prices from the DOM node before extracting text
                 elem.find("s, del, [class*='old'], [class*='compare-at'], [class*='CompareAt']").remove()
-                
+
                 const text = elem.text()
                 if (text && text.length > 0) {
                     domPrice = cleanPrice(text)
@@ -132,18 +133,18 @@ export class ZakolotParser extends UniversalParser {
 
         for (const selector of imageSelectors) {
             const imgElements = $(selector)
-            
+
             for (let i = 0; i < Math.min(imgElements.length, 5); i++) {
                 const imgEl = $(imgElements[i])
-                let src = imgEl.attr("src") || 
-                         imgEl.attr("data-src") ||
-                         imgEl.attr("data-image") ||
-                         imgEl.attr("data-lazy-src") ||
-                         ""
-                
+                let src = imgEl.attr("src") ||
+                    imgEl.attr("data-src") ||
+                    imgEl.attr("data-image") ||
+                    imgEl.attr("data-lazy-src") ||
+                    ""
+
                 // Filter out logos/icons
-                if (!src || 
-                    src.includes("loading") || 
+                if (!src ||
+                    src.includes("loading") ||
                     src.includes("placeholder") ||
                     src.includes("avatar") ||
                     src.includes("logo") ||
@@ -156,7 +157,7 @@ export class ZakolotParser extends UniversalParser {
                 const width = imgEl.attr("width")
                 const height = imgEl.attr("height")
                 const size = (width && height) ? parseInt(width) * parseInt(height) : 0
-                
+
                 // Skip very small images (likely icons)
                 if (src && size < 10000 && size > 0) {
                     continue
@@ -168,7 +169,7 @@ export class ZakolotParser extends UniversalParser {
                     break
                 }
             }
-            
+
             if (imageUrl) break
         }
 
@@ -182,13 +183,21 @@ export class ZakolotParser extends UniversalParser {
 
         // Витяг опису
         description = $(".product-description").first().text().trim() ||
-                      $("[class*='description']").first().text().trim() ||
-                      ""
+            $("[class*='description']").first().text().trim() ||
+            ""
 
         const price = [domPrice, ldData.price || 0].find(p => p > 0) || 0
         let oldPrice = [domOldPrice, ldData.oldPrice].find(p => p !== undefined && p > 0)
-        
+
         if (oldPrice && oldPrice <= price) oldPrice = undefined
+
+        // SmartDiscount fallback
+        if (!oldPrice && price > 0) {
+            const smartResult = detectDiscount(html, price, "")
+            if (smartResult) {
+                oldPrice = smartResult.oldPrice
+            }
+        }
 
         return {
             title: cleanText(title),

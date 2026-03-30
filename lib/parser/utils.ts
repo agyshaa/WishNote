@@ -1,6 +1,24 @@
 import { execSync } from "child_process"
 import { getRandomHeaders, getRandomUserAgent, rateLimitedDelay, withRetry, calculateDiscountPercent } from "./anti-blocking"
+import { createPage, isBrowserRunning } from "./browser-manager"
 import type { ProductData } from "./types"
+
+/**
+ * Normalize URL for caching (remove tracking params, sort query string)
+ */
+function normalizeUrlForCache(url: string): string {
+    const urlObj = new URL(url)
+    
+    // Remove common tracking parameters
+    const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid', 'msclkid', '_ga', 'ref']
+    trackingParams.forEach(param => urlObj.searchParams.delete(param))
+    
+    // Sort query parameters for consistency
+    const params = new URLSearchParams([...urlObj.searchParams.entries()].sort())
+    urlObj.search = params.toString()
+    
+    return urlObj.toString()
+}
 
 /**
  * In-memory cache for parsed products (URL -> ProductData)
@@ -10,7 +28,8 @@ const PARSE_CACHE = new Map<string, { data: ProductData; timestamp: number }>()
 const CACHE_TTL_MS = 3600000 // 1 hour
 
 export function getCachedParse(url: string): ProductData | null {
-    const cached = PARSE_CACHE.get(url)
+    const normalizedUrl = normalizeUrlForCache(url)
+    const cached = PARSE_CACHE.get(normalizedUrl)
     if (!cached) return null
     
     const age = Date.now() - cached.timestamp
@@ -24,8 +43,9 @@ export function getCachedParse(url: string): ProductData | null {
 }
 
 export function setCachedParse(url: string, data: ProductData): void {
-    PARSE_CACHE.set(url, { data, timestamp: Date.now() })
-    console.log(`[cache] 💾 Cached ${url}`)
+    const normalizedUrl = normalizeUrlForCache(url)
+    PARSE_CACHE.set(normalizedUrl, { data, timestamp: Date.now() })
+    console.log(`[cache] 💾 Cached ${normalizedUrl}`)
 }
 
 export function clearParseCache(): void {
@@ -65,75 +85,20 @@ export function cleanText(text: string): string {
 }
 
 /**
- * Fetch HTML content from a URL using curl.
- * Uses curl instead of Node.js fetch/https because sites like Comfy use
- * Imperva (Incapsula) anti-bot that serves JS challenge pages to Node.js
- * but allows curl through with proper headers.
+ * Fetch HTML content using Puppeteer (singleton browser instance)
+ * Uses the singleton browser manager to avoid launching new browsers per request.
+ * 
+ * Current approach: Launches new browser per request (3-5s overhead)
+ * Singleton approach: Reuses browser instance, new page per request (~100ms)
  */
 export async function renderHtmlWithPuppeteer(url: string): Promise<string> {
-    const puppeteer = await import("puppeteer")
     const domain = new URL(url).hostname
-    let browser
+    let page
     
     try {
-        browser = await puppeteer.default.launch({
-            headless: true,  // Modern headless mode
-            args: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-web-resources",  // Disable web resource loading detection
-                "--disable-extensions",
-                "--disable-plugins",
-                "--disable-images",  // Disable images for faster loading
-            ],
-        })
-
-        const page = await browser.newPage()
+        // Get a new page from singleton browser (no browser launch needed)
+        page = await createPage()
         
-        // Set viewport to look like a real browser
-        await page.setViewport({ width: 1920, height: 1080 })
-
-        // Advanced evasion: Override detection methods
-        await page.evaluateOnNewDocument(() => {
-            // Hide puppeteer
-            Object.defineProperty(navigator, 'webdriver', { get: () => false })
-            
-            // Spoof Chrome
-            // @ts-ignore
-            window.navigator.chrome = { runtime: {} }
-            
-            // Override permissions
-            const originalQuery = window.navigator.permissions.query
-            // @ts-ignore
-            window.navigator.permissions.query = (params) => (
-                params.name === 'notifications'
-                    ? Promise.resolve({ state: Notification.permission })
-                    : originalQuery(params)
-            )
-            
-            // Fake plugins
-            Object.defineProperty(navigator, 'plugins', {
-                get: () => [
-                    { name: 'Chrome PDF Plugin', description: 'Portable Document Format', filename: 'internal-pdf-viewer' },
-                    { name: 'Chrome PDF Viewer', description: '', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
-                ]
-            })
-            
-            // Languages
-            Object.defineProperty(navigator, 'languages', {
-                get: () => ['uk-UA', 'uk', 'en-US', 'en']
-            })
-            
-            // Mock languages method
-            // @ts-ignore
-            Object.defineProperty(navigator, 'language', {
-                get: () => 'uk-UA'
-            })
-        })
-
         // Set more realistic headers
         const randomHeaders = getRandomHeaders(url)
         await page.setUserAgent(randomHeaders["User-Agent"])
@@ -147,27 +112,29 @@ export async function renderHtmlWithPuppeteer(url: string): Promise<string> {
         // Small human-like delay before loading (not too long)
         await new Promise(r => setTimeout(r, Math.random() * 500 + 300))
         
-        console.log(`[Puppeteer] Loading ${domain}...`)
+        console.log(`[Puppeteer] Opening ${domain}...`)
         const startTime = Date.now()
         
-        // Faster: use domcontentloaded instead of networkidle2
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 })
+        // Use networkidle2 for sites known to have async content loading
+        // Otherwise use domcontentloaded for faster response
+        const isAsyncHeavy = ["rozetka", "comfy", "megasport"].some(site => domain.includes(site))
+        const waitUntil = isAsyncHeavy ? "networkidle2" : "domcontentloaded"
         
-        // Quick wait for rendering
-        await new Promise(r => setTimeout(r, 1000))
+        await page.goto(url, { waitUntil, timeout: 25000 })
         
         let html = await page.content()
         const loadTime = Date.now() - startTime
         console.log(`[Puppeteer] ✅ Loaded ${domain} in ${loadTime}ms (${html.length} bytes)`)
         
-        // Check for WAF blocks
+        // Check for actual WAF blocks only (not just small size)
         const isBlocked = html.includes("Incapsula_Resource") || 
                          html.includes("Pardon Our Interruption") || 
                          html.includes("Just a moment") ||
                          html.includes("403") ||
-                         html.length < 100  // Suspiciously small response
+                         html.includes("challenge") ||
+                         (html.length < 500 && (html.includes("error") || html.includes("blocked")))
         
-        if (isBlocked) {
+        if (isBlocked && !isAsyncHeavy) {
             console.log(`[Puppeteer] WAF Block detected for ${domain}. Retrying with networkidle2...`)
             // Reload with stronger wait
             await page.reload({ waitUntil: "networkidle2", timeout: 20000 }).catch(() => {})
@@ -181,7 +148,14 @@ export async function renderHtmlWithPuppeteer(url: string): Promise<string> {
         console.error(`[Puppeteer] Error rendering ${domain}: ${error?.message || error}`)
         return `<!-- PUPPETEER_ERROR: ${error?.message} -->`
     } finally {
-        if (browser) await browser.close().catch(() => {})
+        // Page will auto-close after 5 minutes (managed by browser-manager)
+        if (page) {
+            try {
+                await page.close()
+            } catch (e) {
+                // Page already closed, ignore
+            }
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -198,6 +199,13 @@ export class MegasportParser extends UniversalParser {
                     return price
                 }
             }
+        }
+        
+        // Strategy 3: SmartDiscount fallback
+        const smartResult = detectDiscount(html, 0, "")
+        if (smartResult) {
+            console.log(`[Megasport] Found oldPrice ${smartResult.oldPrice} via SmartDiscount`)
+            return smartResult.oldPrice
         }
         
         console.log("[Megasport] No oldPrice found - product may not have discount")

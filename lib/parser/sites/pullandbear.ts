@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio"
 import type { ProductData } from "../types"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import { UniversalParser } from "../universal"
 
 /**
@@ -84,6 +85,14 @@ export class PullAndBearParser extends UniversalParser {
 
         // Use extracted image with smart filtering
         const imageUrl = this.extractImage($, ldData.image_url)
+
+        // SmartDiscount fallback
+        if (!oldPrice && price > 0) {
+            const smartResult = detectDiscount(html, price, "")
+            if (smartResult) {
+                oldPrice = smartResult.oldPrice
+            }
+        }
 
         const description = 
             $("[data-testid='product-description']").first().text().trim() ||

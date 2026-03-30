@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
+import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -30,13 +31,23 @@ export class RozetkaParser extends UniversalParser {
         // ============ OLD PRICE (Discount) ============
         let domOldPrice: number | undefined;
 
-        // 1. DOM пошук
+        // 1. DOM пошук з кращими селекторами
         const oldPriceSelectors = [
-            "p.product-prices__small", "div.product-price__small", ".product-about__price--old", "p.product-price--old", "del"
+            "p.product-prices__small", 
+            "div.product-price__small", 
+            ".product-about__price--old", 
+            "p.product-price--old", 
+            "del",
+            ".discount-price",
+            "[data-old-price]",
+            ".old-price",
+            ".original-price",
+            "span.price--old",
+            "span.price-old",
+            ".text-muted.text-decoration-line-through", // Bootstrap style
         ];
         for (const selector of oldPriceSelectors) {
             const oldPrice = cleanPrice($(selector).first().text());
-            // Використовуємо ldData.price як базу, якщо domPrice ще не знайдено
             const basePrice = domPrice > 0 ? domPrice : (ldData.price || 0);
             if (basePrice > 0 && oldPrice > basePrice) {
                 domOldPrice = oldPrice;
@@ -44,22 +55,76 @@ export class RozetkaParser extends UniversalParser {
             }
         }
 
-        // 2. Скриптовий пошук (Якщо DOM порожній через блокування або недозавантаження)
+        // 2. Скриптовий пошук із розшираними патернами
         if (!domOldPrice) {
-            const scriptMatches = html.match(/["']old_price["']\s*:\s*(\d+(\.\d+)?)/gi);
-            if (scriptMatches) {
-                const basePrice = domPrice > 0 ? domPrice : (ldData.price || 0);
-                for (const match of scriptMatches) {
-                    const priceMatch = match.match(/\d+(\.\d+)?/);
-                    if (priceMatch) {
-                        const price = parseFloat(priceMatch[0]);
-                        if (basePrice > 0 && price > basePrice) {
-                            domOldPrice = price;
-                            console.log(`[RozetkaParser] Extracted oldPrice from script: ${price}`);
-                            break;
+            const scriptPatterns = [
+                /["']old_price["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /["']oldPrice["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /["']original_price["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /["']originalPrice["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /["']discount_price["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /["']discounted["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /["']before_discount["']\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /"priceWas"\s*:\s*(\d+(?:\.\d+)?)/gi,
+                /price_was\s*=\s*(\d+(?:\.\d+)?)/gi,
+            ];
+
+            const basePrice = domPrice > 0 ? domPrice : (ldData.price || 0);
+            
+            for (const pattern of scriptPatterns) {
+                const matches = html.match(pattern);
+                if (matches) {
+                    for (const match of matches) {
+                        const priceMatch = match.match(/\d+(?:\.\d+)?/);
+                        if (priceMatch) {
+                            const price = parseFloat(priceMatch[0]);
+                            if (basePrice > 0 && price > basePrice) {
+                                domOldPrice = price;
+                                console.log(`[RozetkaParser] Extracted oldPrice from script: ${price}`);
+                                break;
+                            }
                         }
                     }
+                    if (domOldPrice) break;
                 }
+            }
+        }
+
+        // 3. Пошук через JSON-LD структурені дані в HTML
+        if (!domOldPrice) {
+            const jsonLdMatches = html.match(/<script type="application\/ld\+json"[^>]*>([^<]+)<\/script>/gi);
+            if (jsonLdMatches) {
+                const basePrice = domPrice > 0 ? domPrice : (ldData.price || 0);
+                for (const match of jsonLdMatches) {
+                    try {
+                        const jsonStr = match.replace(/<[^>]+>/g, '');
+                        const data = JSON.parse(jsonStr);
+                        if (data.offers && Array.isArray(data.offers)) {
+                            for (const offer of data.offers) {
+                                if (offer.price && offer.price < basePrice && basePrice > 0) {
+                                    domOldPrice = parseFloat(offer.price);
+                                    console.log(`[RozetkaParser] Extracted oldPrice from JSON-LD: ${domOldPrice}`);
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        // Ігноруємо помилки при парсингу JSON
+                    }
+                    if (domOldPrice) break;
+                }
+            }
+        }
+
+        // 4. SmartDiscount fallback (універсальна машина для пошуку знижок)
+        if (!domOldPrice && domPrice > 0) {
+            const smartResult = detectDiscount(html, domPrice, url)
+            if (smartResult && smartResult.confidence >= 70) {
+                domOldPrice = smartResult.oldPrice
+                console.log(
+                    `[RozetkaParser] SmartDiscount found via ${smartResult.method} ` +
+                    `(confidence: ${smartResult.confidence}%, -${smartResult.discountPercent}%)`
+                )
             }
         }
 
