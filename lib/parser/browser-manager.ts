@@ -1,4 +1,11 @@
-import * as puppeteer from "puppeteer"
+import type { Browser } from "puppeteer"
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const puppeteerExtra = require("puppeteer-extra")
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const StealthPlugin = require("puppeteer-extra-plugin-stealth")
+
+puppeteerExtra.use(StealthPlugin())
 
 /**
  * Singleton browser instance manager
@@ -13,7 +20,7 @@ import * as puppeteer from "puppeteer"
  * Current: 3-5s per request (browser launch) → After: ~100ms per request (page creation only)
  */
 
-let browser: puppeteer.Browser | null = null
+let browser: Browser | null = null
 let pageCount = 0
 let consecutiveErrors = 0
 let lastRestartTime = 0
@@ -30,7 +37,7 @@ export interface BrowserPageOptions {
 /**
  * Initialize the singleton browser instance
  */
-export async function initBrowser(): Promise<puppeteer.Browser> {
+export async function initBrowser(): Promise<Browser> {
     if (browser && browser.isConnected()) {
         return browser
     }
@@ -39,18 +46,13 @@ export async function initBrowser(): Promise<puppeteer.Browser> {
         console.log("[BrowserManager] 🚀 Launching singleton browser instance...")
         const startTime = Date.now()
         
-        browser = await puppeteer.launch({
+        browser = await puppeteerExtra.launch({
             headless: true,
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-gpu",
                 "--disable-dev-shm-usage",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-web-resources",
-                "--disable-extensions",
-                "--disable-plugins",
-                "--disable-images",  // Disable images for faster loading
             ],
         })
 
@@ -64,7 +66,7 @@ export async function initBrowser(): Promise<puppeteer.Browser> {
         // Start periodic monitoring
         startMonitoring()
         
-        return browser
+        return browser!
     } catch (error) {
         console.error("[BrowserManager] ❌ Failed to launch browser:", error)
         throw error
@@ -74,7 +76,7 @@ export async function initBrowser(): Promise<puppeteer.Browser> {
 /**
  * Get or create a new page from the singleton browser
  */
-export async function createPage(options: BrowserPageOptions = {}): Promise<puppeteer.Page> {
+export async function createPage(options: BrowserPageOptions = {}): Promise<import('puppeteer').Page> {
     const browserInstance = await initBrowser()
     
     try {

@@ -1,6 +1,5 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
-import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -29,8 +28,10 @@ export class MoyoParser extends UniversalParser {
     }
 
     private findCurrentPrice($: cheerio.CheerioAPI): number {
-        // Moyo використовує різні класи для ціни
         const priceSelectors = [
+            ".product_price_current",
+            ".js-current-price",
+            ".product_fixed_buy_price_current",
             ".product-price",
             ".current-price",
             "[data-current-price]",
@@ -54,8 +55,11 @@ export class MoyoParser extends UniversalParser {
     private findOldPrice($: cheerio.CheerioAPI, currentPrice: number, rawHtml: string): number | undefined {
         const candidates = new Set<number>();
 
-        // 1. CSS селектори для старої ціни (різні варіанти)
+        // Moyo-specific selectors (highest priority)
         const selectors = [
+            ".product_price_oldprice",
+            ".js-old-price",
+            ".product_fixed_buy_price_old",
             ".old-price",
             ".original-price",
             ".compare-at-price",
@@ -65,15 +69,10 @@ export class MoyoParser extends UniversalParser {
             "span[class*='original-price']",
             "span[class*='was-price']",
             "del",
-            "del span",
             "s",
-            "s span",
             "[style*='line-through']",
             "[data-old-price]",
             "[data-original-price]",
-            ".strike-through",
-            ".product__discount-price",
-            ".was-price",
         ];
 
         for (const selector of selectors) {
@@ -125,12 +124,6 @@ export class MoyoParser extends UniversalParser {
         const validCandidates = Array.from(candidates).filter(p => p > currentPrice);
         if (validCandidates.length > 0) {
             return Math.max(...validCandidates);
-        }
-
-        // SmartDiscount fallback
-        const smartResult = detectDiscount(rawHtml, currentPrice, "");
-        if (smartResult) {
-            return smartResult.oldPrice;
         }
 
         return undefined;

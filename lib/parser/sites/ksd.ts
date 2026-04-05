@@ -1,6 +1,5 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
-import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -34,46 +33,41 @@ export class KsdParser extends UniversalParser {
         let finalPrice = candidatesNew.size > 0 ? Math.min(...Array.from(candidatesNew)) : 0
 
         // ============ ЗБИРАЄМО СТАРУ ЦІНУ ============
-        // Шукаємо по всіх можливих закреслених елементах та класах
-        const oldPriceSelectors = [
-            ".regular-price", ".old-price", ".price-old", "[class*='old-price']",
-            "[class*='crossed-price']", "s", "del", "[style*='line-through']"
-        ]
-
-        for (const sel of oldPriceSelectors) {
-            $(sel).each((_, el) => {
-                const text = $(el).text()
-                const p = cleanPrice(text)
-                if (p > 0) {
-                    console.log(`[KSD] Знайдено потенційну стару ціну в DOM (${sel}): "${text}" -> ${p}`)
-                    candidatesOld.add(p)
-                }
-            })
-        }
-
-        // ДОДАЄМО З JSON-LD (це те, що я пропустив минулого разу)
-        if (ldData.oldPrice) {
-            console.log(`[KSD] Знайдено стару ціну в JSON-LD: ${ldData.oldPrice}`)
-            candidatesOld.add(ldData.oldPrice)
-        }
-
-        // Відбираємо стару ціну
+        // ksd.ua main product: old price is an MuiTypography-h4 sibling of the MuiTypography-h2 (current price)
+        // in the same parent container. Scoping here avoids picking up prices from related product cards.
         let finalOldPrice: number | undefined = undefined
-        const validOldPrices = Array.from(candidatesOld).filter(p => p > finalPrice && p < finalPrice * 5)
 
-        if (validOldPrices.length > 0) {
-            finalOldPrice = Math.max(...validOldPrices)
+        const priceH2 = $('[class*="MuiTypography-h2"]').filter((_, el) => /\d{3,}/.test($(el).text())).first()
+        if (priceH2.length) {
+            const siblingOld = priceH2.parent().find('[class*="MuiTypography-h4"]').first()
+            const siblingPrice = cleanPrice(siblingOld.text())
+            if (siblingPrice > finalPrice) {
+                finalOldPrice = siblingPrice
+                console.log(`[KSD] h4 sibling old price: ${finalOldPrice}`)
+            }
+        }
+
+        // Fallback: generic old-price selectors
+        if (!finalOldPrice) {
+            const oldPriceSelectors = [
+                ".regular-price", ".old-price", ".price-old", "[class*='old-price']",
+                "[class*='crossed-price']", "s", "del", "[style*='line-through']"
+            ]
+            for (const sel of oldPriceSelectors) {
+                $(sel).each((_, el) => {
+                    const p = cleanPrice($(el).text())
+                    if (p > finalPrice) candidatesOld.add(p)
+                })
+            }
+            if (ldData.oldPrice && ldData.oldPrice > finalPrice) candidatesOld.add(ldData.oldPrice)
+            const valid = Array.from(candidatesOld).filter(p => p > finalPrice && p < finalPrice * 5)
+            if (valid.length > 0) finalOldPrice = Math.min(...valid)
+        }
+
+        if (finalOldPrice) {
             console.log(`[KSD] ✅ Обрано стару ціну: ${finalOldPrice} (Нова: ${finalPrice})`)
         } else {
             console.log(`[KSD] ⚠️ Стару ціну не знайдено або вона менша/рівна новій ціні.`)
-        }
-
-        // SmartDiscount fallback
-        if (!finalOldPrice && finalPrice > 0) {
-            const smartResult = detectDiscount(html, finalPrice, "")
-            if (smartResult) {
-                finalOldPrice = smartResult.oldPrice
-            }
         }
 
         // ============ ІНШІ ДАНІ ============

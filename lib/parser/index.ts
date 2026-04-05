@@ -15,6 +15,10 @@ import { AnswearParser } from "./sites/answear"
 import { FoxtrotParser } from "./sites/foxtrot"
 import { YablokiParser } from "./sites/yabloki"
 import { MoyoParser } from "./sites/moyo"
+import { AlloParser } from "./sites/allo"
+import { JyskParser } from "./sites/jysk"
+import { CtrsParser } from "./sites/ctrs"
+import { PromParser } from "./sites/prom"
 
 /**
  * Get the appropriate parser for a URL based on domain.
@@ -35,6 +39,10 @@ function getParser(url: string): ProductParser {
     if (domain.includes("ksd")) return new KsdParser()
     if (domain.includes("answear")) return new AnswearParser()
     if (domain.includes("moyo")) return new MoyoParser()
+    if (domain.includes("allo.ua")) return new AlloParser()
+    if (domain.includes("jysk.ua")) return new JyskParser()
+    if (domain.includes("ctrs.com.ua")) return new CtrsParser()
+    if (domain.includes("prom.ua")) return new PromParser()
 
     return new UniversalParser()
 }
@@ -112,11 +120,15 @@ export async function parseProduct(url: string): Promise<ProductData> {
         store_name: data.store_name || getStoreName(url),
     }
     
-    // Cache the result in both in-memory and Redis
-    setCachedParse(url, result)
-    await saveToRedisCache(url, result).catch(err => {
-        console.debug("[parser] Redis cache save failed (non-blocking):", err.message)
-    })
+    // Only cache if we got meaningful data (not a failed/empty parse)
+    if (result.title || result.price > 0) {
+        setCachedParse(url, result)
+        await saveToRedisCache(url, result).catch(err => {
+            console.debug("[parser] Redis cache save failed (non-blocking):", err.message)
+        })
+    } else {
+        console.log(`[parser] ⚠️ Skipping cache for ${domain} — empty result (parse failed)`)
+    }
     
     return result
 }

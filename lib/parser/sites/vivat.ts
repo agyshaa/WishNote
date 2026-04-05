@@ -1,6 +1,5 @@
 import * as cheerio from "cheerio"
 import { cleanPrice, cleanText, calculateDiscountPercent } from "../utils"
-import { detectDiscount } from "../smart-discount"
 import type { ProductData } from "../types"
 import { UniversalParser } from "../universal"
 
@@ -56,6 +55,20 @@ export class VivatsParser extends UniversalParser {
             candidatesOld.add(ldData.oldPrice)
         }
 
+        // Parse inline JSON price blob (vivat SSR injects price object)
+        // Pattern: "price":{"retail":999,"promotion":896,"priceRebate":896,"priceWithOutDiscount":999}
+        const priceJsonMatch = html.match(/"price"\s*:\s*(\{[^}]{10,200}\})/)
+        if (priceJsonMatch) {
+            try {
+                const priceObj = JSON.parse(priceJsonMatch[1])
+                const retail = cleanPrice(String(priceObj.retail || priceObj.priceWithOutDiscount || 0))
+                const promotion = cleanPrice(String(priceObj.promotion || priceObj.priceRebate || 0))
+                if (promotion > 0) finalPrice = promotion
+                if (retail > promotion) candidatesOld.add(retail)
+                console.log(`[Vivats] inline price JSON → retail: ${retail}, promotion: ${promotion}`)
+            } catch { }
+        }
+
         // Відбираємо стару ціну
         let finalOldPrice: number | undefined = undefined
         const validOldPrices = Array.from(candidatesOld).filter(p => p > finalPrice && p < finalPrice * 5)
@@ -65,14 +78,6 @@ export class VivatsParser extends UniversalParser {
             console.log(`[Vivats] ✅ Обрано стару ціну: ${finalOldPrice} (Нова: ${finalPrice})`)
         } else {
             console.log(`[Vivats] ⚠️ Стару ціну не знайдено або вона менша/рівна новій ціні.`)
-        }
-
-        // SmartDiscount fallback
-        if (!finalOldPrice && finalPrice > 0) {
-            const smartResult = detectDiscount(html, finalPrice, "")
-            if (smartResult) {
-                finalOldPrice = smartResult.oldPrice
-            }
         }
 
         // ============ ІНШІ ДАНІ ============

@@ -1,6 +1,6 @@
 import { execSync } from "child_process"
 import { getRandomHeaders, getRandomUserAgent, rateLimitedDelay, withRetry, calculateDiscountPercent } from "./anti-blocking"
-import { createPage, isBrowserRunning } from "./browser-manager"
+import { createPage, closeBrowser, isBrowserRunning } from "./browser-manager"
 import type { ProductData } from "./types"
 
 /**
@@ -63,8 +63,13 @@ export function cleanPrice(priceStr: string): number {
     // Remove non-breaking spaces and regular spaces
     let cleaned = priceStr.replace(/\u00a0/g, "").replace(/\s/g, "")
 
-    // If comma is used as decimal separator (no dot present)
-    if (cleaned.includes(",") && !cleaned.includes(".")) {
+    // Case 1: both comma and dot present → comma is thousands separator (e.g. "6,990.00")
+    // Strip the thousands comma so we get "6990.00"
+    if (cleaned.includes(",") && cleaned.includes(".")) {
+        cleaned = cleaned.replace(/,/g, "")
+    }
+    // Case 2: comma present, no dot → comma is decimal separator (e.g. "699,00")
+    else if (cleaned.includes(",") && !cleaned.includes(".")) {
         cleaned = cleaned.replace(",", ".")
     }
 
@@ -99,48 +104,89 @@ export async function renderHtmlWithPuppeteer(url: string): Promise<string> {
         // Get a new page from singleton browser (no browser launch needed)
         page = await createPage()
         
-        // Set more realistic headers
+        // Block images, fonts and media to speed up page loading.
+        // This does NOT affect CF challenge (purely JS-based) or fingerprinting.
+        await page.setRequestInterception(true)
+        page.on("request", (req) => {
+            const type = req.resourceType()
+            if (type === "image" || type === "font" || type === "media") {
+                req.abort()
+            } else {
+                req.continue()
+            }
+        })
+
+        // Set Accept-Language and other headers (NOT User-Agent — let stealth handle that)
         const randomHeaders = getRandomHeaders(url)
-        await page.setUserAgent(randomHeaders["User-Agent"])
         await page.setExtraHTTPHeaders({
             "Accept-Language": randomHeaders["Accept-Language"],
             "Accept": randomHeaders["Accept"],
             "Accept-Encoding": randomHeaders["Accept-Encoding"],
             "DNT": "1",
         })
-
-        // Small human-like delay before loading (not too long)
-        await new Promise(r => setTimeout(r, Math.random() * 500 + 300))
         
         console.log(`[Puppeteer] Opening ${domain}...`)
         const startTime = Date.now()
         
         // Use networkidle2 for sites known to have async content loading
         // Otherwise use domcontentloaded for faster response
-        const isAsyncHeavy = ["rozetka", "comfy", "megasport"].some(site => domain.includes(site))
+        // NOTE: staff-clothes uses domcontentloaded so CF JS challenge can execute freely
+        // comfy.ua removed: Imperva WAF keeps network active → networkidle2 deadlocks
+        const isAsyncHeavy = ["rozetka", "megasport"].some(site => domain.includes(site))
         const waitUntil = isAsyncHeavy ? "networkidle2" : "domcontentloaded"
         
-        await page.goto(url, { waitUntil, timeout: 25000 })
+        // NetworkIdle2 sites (rozetka/comfy/megasport) load heavily — give more time
+        const gotoTimeout = isAsyncHeavy ? 45000 : 25000
+        await page.goto(url, { waitUntil, timeout: gotoTimeout })
         
         let html = await page.content()
         const loadTime = Date.now() - startTime
         console.log(`[Puppeteer] ✅ Loaded ${domain} in ${loadTime}ms (${html.length} bytes)`)
         
-        // Check for actual WAF blocks only (not just small size)
-        const isBlocked = html.includes("Incapsula_Resource") || 
-                         html.includes("Pardon Our Interruption") || 
-                         html.includes("Just a moment") ||
-                         html.includes("403") ||
-                         html.includes("challenge") ||
-                         (html.length < 500 && (html.includes("error") || html.includes("blocked")))
+        // Detect Cloudflare/WAF challenges using language-agnostic structural markers
+        // Challenge pages are always small (<50KB), real product pages are always large (200KB+)
+        // cdn-cgi is a Cloudflare-exclusive path never found on normal pages
+        const isCloudflareChallenge = (h: string) =>
+            h.length < 50000 && (
+                h.includes('cdn-cgi') ||
+                h.includes('window._cf_chl_opt') ||
+                h.includes('id="challenge-running"') ||
+                h.includes("Incapsula_Resource")
+            )
         
-        if (isBlocked && !isAsyncHeavy) {
-            console.log(`[Puppeteer] WAF Block detected for ${domain}. Retrying with networkidle2...`)
-            // Reload with stronger wait
-            await page.reload({ waitUntil: "networkidle2", timeout: 20000 }).catch(() => {})
-            html = await page.content()
+        if (isCloudflareChallenge(html)) {
+            console.log(`[Puppeteer] WAF Block detected for ${domain}. Waiting for CF challenge to auto-solve...`)
+            // CF Managed Challenge replaces page content via JS in-place (no full navigation event).
+            // We poll page size — once content grows beyond 50KB CF has passed us through.
+            const challengeStart = Date.now()
+            let resolved = false
+            while (Date.now() - challengeStart < 30000 && !resolved) {
+                await new Promise(r => setTimeout(r, 1500))
+                try {
+                    const size = await page.evaluate(() => document.documentElement.outerHTML.length)
+                    if (size > 50000) {
+                        html = await page.content()
+                        if (!isCloudflareChallenge(html)) {
+                            resolved = true
+                        }
+                    }
+                } catch (e) {
+                    // page may have navigated, retry
+                }
+            }
+            
+            if (!resolved) {
+                // Browser is tainted — CF keeps challenging it. Restart browser and retry once.
+                console.log(`[Puppeteer] ⚠️ CF challenge not resolved. Restarting browser and retrying...`)
+                await page.close().catch(() => {})
+                page = undefined
+                await closeBrowser()
+                // Retry with fresh browser (no recursion — just one retry)
+                return await renderHtmlWithPuppeteer(url)
+            }
+
             const retryTime = Date.now() - startTime
-            console.log(`[Puppeteer] ✅ Retry succeeded in ${retryTime}ms`)
+            console.log(`[Puppeteer] ✅ CF challenge resolved in ${retryTime}ms`)
         }
 
         return html

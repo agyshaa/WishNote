@@ -66,9 +66,9 @@ export function detectDiscount(
     result = findOldPriceByAttributes($, currentPrice)
     if (result && result.confidence >= 70) return result
 
-    // Method 8: Statistical price mining
+    // Method 8: Statistical price mining (lowest confidence — only use if high enough)
     result = findOldPriceByMining($, html, currentPrice)
-    if (result) return result
+    if (result && result.confidence >= 70) return result
 
     return null
 }
@@ -544,35 +544,25 @@ function findOldPriceByMining(
 
     const priceArray = Array.from(prices).sort((a, b) => b - a)
 
-    // Look for price pairs
-    for (let i = 0; i < priceArray.length; i++) {
-        const potentialOld = priceArray[i]
-        
-        // Current price should be in our list and lower than old
-        if (Math.abs(potentialOld - currentPrice) > currentPrice * 0.2) {
-            // Not our current price, keep searching
-            continue
-        }
+    // Look for a price higher than currentPrice that could be the old price.
+    // The old price must be 5-60% higher than current, and close in HTML proximity.
+    for (const potentialOld of priceArray) {
+        if (potentialOld <= currentPrice) continue  // old price must be higher
 
-        // Find a price that's plausibly higher (10-40% mark-up)
-        for (let j = i + 1; j < priceArray.length; j++) {
-            const potentialNew = priceArray[j]
-            const diff = potentialOld - potentialNew
-            const discountPercent = (diff / potentialOld) * 100
+        const discountPercent = ((potentialOld - currentPrice) / potentialOld) * 100
 
-            // Discount should be 5-70% to be realistic
-            if (discountPercent >= 5 && discountPercent <= 70) {
-                // Check proximity in HTML (numbers should be relatively close)
-                if (arePricesNearby(html, potentialOld, potentialNew, 500)) {
-                    return {
-                        oldPrice: potentialOld,
-                        currentPrice: potentialNew,
-                        discountPercent: Math.round(discountPercent),
-                        confidence: 60,  // Lower confidence for mining
-                        method: "mining",
-                        explanation: `Statistical mining: found price pair within 500 char proximity`,
-                    }
-                }
+        // Discount should be 5-60% to be realistic (avoid outliers)
+        if (discountPercent < 5 || discountPercent > 60) continue
+
+        // Check proximity in HTML (numbers should be relatively close)
+        if (arePricesNearby(html, potentialOld, currentPrice, 300)) {
+            return {
+                oldPrice: potentialOld,
+                currentPrice,
+                discountPercent: Math.round(discountPercent),
+                confidence: 70,
+                method: "mining",
+                explanation: `Statistical mining: found old price ${potentialOld} near current ${currentPrice}`,
             }
         }
     }

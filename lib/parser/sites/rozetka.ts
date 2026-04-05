@@ -21,7 +21,11 @@ export class RozetkaParser extends UniversalParser {
         // ============ PRICE (Current) ============
         let domPrice = 0;
         const priceSelectors = [
-            "p.product-prices__big", "div.product-price__big", "p.product__price"
+            "p.product-price__big",  // new class
+            "p.product-prices__big", // old class (fallback)
+            "div.product-price__big",
+            "div.product-price__big.text-2xl",
+            "p.product__price"
         ];
         for (const selector of priceSelectors) {
             const price = cleanPrice($(selector).first().text());
@@ -33,8 +37,9 @@ export class RozetkaParser extends UniversalParser {
 
         // 1. DOM пошук з кращими селекторами
         const oldPriceSelectors = [
-            "p.product-prices__small", 
-            "div.product-price__small", 
+            "p.product-price__small",   // new class
+            "p.product-prices__small",  // old class (fallback)
+            "div.product-price__small",
             ".product-about__price--old", 
             "p.product-price--old", 
             "del",
