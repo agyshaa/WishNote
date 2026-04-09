@@ -304,7 +304,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Item functions
     const addItemToWishlist = async (wishlistId: string, item: Omit<WishlistItem, "id" | "addedAt">) => {
         try {
-            console.log("[addItemToWishlist] Adding item:", item)
             const res = await fetch(`/api/wishlists/${wishlistId}/items`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -313,7 +312,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
             if (res.ok) {
                 const data = await res.json()
-                console.log("[addItemToWishlist] Response:", data)
                 setWishlists((prev) =>
                     prev.map((w) =>
                         w.id === wishlistId

@@ -40,7 +40,7 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
     return (
         <div
             className={cn(
-                "group glass rounded-2xl overflow-hidden transition-smooth hover:scale-[1.02] cursor-pointer",
+                "group glass rounded-2xl overflow-hidden transition-smooth hover:scale-[1.02] cursor-pointer h-full",
                 viewMode === "list" ? "flex flex-col sm:flex-row" : "flex flex-col",
                 className,
             )}
@@ -53,7 +53,7 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                     "relative overflow-hidden bg-muted",
                     viewMode === "list"
                         ? "w-full sm:w-48 xl:w-56 shrink-0 aspect-4/3 sm:aspect-square"
-                        : variant === "compact" ? "aspect-square" : "aspect-4/5"
+                        : variant === "compact" ? "aspect-square" : "aspect-square"
                 )}
             >
                 <Image
@@ -225,7 +225,7 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                 <div className="flex justify-between items-start mb-1 gap-2">
                     <p className="text-xs text-muted-foreground">{item.store}</p>
                 </div>
-                <h3 className={cn("font-medium text-foreground break-all whitespace-pre-wrap", viewMode === "list" ? "text-base lg:text-lg mb-3" : "line-clamp-2 text-sm mb-2")}>{item.title}</h3>
+                <h3 className={cn("font-medium text-foreground", viewMode === "list" ? "text-base lg:text-lg mb-3 line-clamp-3" : "line-clamp-2 text-sm mb-2")}>{item.title}</h3>
                 <div className={cn("mt-auto", viewMode === "list" ? "flex items-end justify-between gap-4" : "")}>
                     <div className="flex flex-col items-start gap-1">
                         <p className="text-lg font-bold text-secondary">₴{item.price.toFixed(2)}</p>
@@ -240,7 +240,7 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                             </div>
                         )}
                     </div>
-                    {item.notes && <p className={cn("text-xs text-muted-foreground break-all whitespace-pre-wrap", viewMode === "list" ? "max-w-[60%] line-clamp-2 text-right" : "mt-2 line-clamp-1")}>"{item.notes}"</p>}
+                    {item.notes && <p className={cn("text-xs text-muted-foreground", viewMode === "list" ? "max-w-[60%] line-clamp-2 text-right" : "mt-2 line-clamp-1 break-words")}>"{item.notes}"</p>}
                 </div>
             </div>
         </div>

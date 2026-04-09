@@ -19,7 +19,6 @@ export async function POST(req: Request) {
 
         try {
             const data = await parseProduct(url)
-            console.log("[api/parse] Parsed data:", data)
 
             return NextResponse.json({
                 title: data.title || "Unknown Product",

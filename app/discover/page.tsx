@@ -39,7 +39,9 @@ export default function DiscoverPage() {
 
     // UI states
     const [viewMode, setViewMode] = useState<"grid-lg" | "grid-sm" | "list">("grid-lg")
-    const [visibleCount, setVisibleCount] = useState(9)
+    const [visibleCount, setVisibleCount] = useState(8)
+
+    const pageSize = viewMode === "grid-sm" ? 10 : 8
 
     // Fetch public items on mount
     useEffect(() => {
@@ -137,8 +139,8 @@ export default function DiscoverPage() {
 
     // Reset pagination when filters change
     useEffect(() => {
-        setVisibleCount(9)
-    }, [filters.searchQuery, filters.categories, filters.minPrice, filters.maxPrice, filters.sortBy])
+        setVisibleCount(pageSize)
+    }, [filters.searchQuery, filters.categories, filters.minPrice, filters.maxPrice, filters.sortBy, pageSize])
 
     // Generate inspired recommendations by shuffling the entire list
     const handleInspireMe = () => {
@@ -149,7 +151,7 @@ export default function DiscoverPage() {
         setAllItems(shuffled)
 
         // Reset pagination
-        setVisibleCount(9)
+        setVisibleCount(pageSize)
 
         // Show a quick pulse effect
         setShowInspiration(true)
@@ -449,7 +451,7 @@ export default function DiscoverPage() {
                                                 "flex flex-col"
                                     )}>
                                         {displayItems.slice(0, visibleCount).map((item) => (
-                                            <div key={item.id} className="w-full">
+                                            <div key={item.id} className="w-full h-full">
                                                 <ProductCard
                                                     item={item}
                                                     viewMode={viewMode === "list" ? "list" : "grid"}
@@ -482,7 +484,7 @@ export default function DiscoverPage() {
                             {displayItems.length > visibleCount && !showInspiration && (
                                 <div className="text-center mt-12 mb-8">
                                     <Button
-                                        onClick={() => setVisibleCount(prev => prev + 9)}
+                                        onClick={() => setVisibleCount(prev => prev + pageSize)}
                                         variant="outline"
                                         className="border-primary text-primary hover:bg-primary/10 bg-transparent px-8"
                                     >
