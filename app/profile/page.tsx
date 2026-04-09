@@ -22,7 +22,7 @@ import { useLanguage } from "@/lib/language-context"
 const tabs = [
     { id: "my-lists", labelKey: "profile.myWishlists", icon: List },
     { id: "shared", labelKey: "profile.mySharedLists", icon: Users },
-     { id: "booked", labelKey: "profile.bookedByMe", icon: Plus },
+    { id: "booked", labelKey: "profile.bookedByMe", icon: Plus },
 ]
 
 export default function ProfilePage() {

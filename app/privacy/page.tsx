@@ -109,8 +109,8 @@ export default function PrivacyPolicyPage() {
                                                 document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })
                                             }}
                                             className={`group flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-smooth ${isActive
-                                                    ? "bg-primary/10 text-primary font-medium"
-                                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                                ? "bg-primary/10 text-primary font-medium"
+                                                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                                                 }`}
                                         >
                                             <s.icon className={`w-4 h-4 shrink-0 transition-smooth ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />

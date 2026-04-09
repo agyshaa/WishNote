@@ -23,7 +23,7 @@ interface PublicProfileProps {
 
 export default async function PublicProfilePage({ params }: PublicProfileProps) {
     const { username } = await params;
-    
+
     const user = await prisma.user.findUnique({
         where: { username },
         include: {

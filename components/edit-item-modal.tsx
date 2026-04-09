@@ -87,14 +87,14 @@ export function EditItemModal({ isOpen, onClose, item, onSave, isLoading }: Edit
                                 { value: "medium", label: t("item.want"), color: "bg-secondary" },
                                 { value: "low", label: t("item.niceToHave"), color: "bg-muted-foreground" },
                             ].map((p) => (
-                            <Button
+                                <Button
                                     key={p.value}
                                     variant="ghost"
                                     onClick={() => setPriority(p.value)}
                                     disabled={isLoading}
                                     className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium ${priority === p.value
-                                            ? `${p.color} text-background hover:opacity-90`
-                                            : "bg-muted text-muted-foreground hover:text-foreground"
+                                        ? `${p.color} text-background hover:opacity-90`
+                                        : "bg-muted text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     {p.label}

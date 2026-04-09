@@ -89,10 +89,10 @@ export function BookedItemsTab() {
                         {/* Priority Badge - Top Left */}
                         <div
                             className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full text-black ${item.priority === "high"
-                                    ? "bg-primary"
-                                    : item.priority === "medium"
-                                        ? "bg-secondary"
-                                        : "bg-muted-foreground"
+                                ? "bg-primary"
+                                : item.priority === "medium"
+                                    ? "bg-secondary"
+                                    : "bg-muted-foreground"
                                 }`}
                         >
                             {item.priority === "high" ? t("item.mustHave") : item.priority === "medium" ? t("item.want") : t("item.niceToHave")}

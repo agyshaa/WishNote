@@ -197,9 +197,8 @@ function EndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
                         </span>
                     )}
                     <ChevronDown
-                        className={`w-5 h-5 text-muted-foreground transition-transform ${
-                            expanded ? "rotate-180" : ""
-                        }`}
+                        className={`w-5 h-5 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""
+                            }`}
                     />
                 </div>
             </Button>

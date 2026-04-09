@@ -10,48 +10,48 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" })
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
 }
 
 export const metadata: Metadata = {
-  title: "WishList - Your wishes, beautifully organized",
-  description: "Create stunning wishlists from any store. Share with friends using private access keys.",
-  icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
-  },
+    title: "WishList - Your wishes, beautifully organized",
+    description: "Create stunning wishlists from any store. Share with friends using private access keys.",
+    icons: {
+        icon: [
+            {
+                url: "/icon-light-32x32.png",
+                media: "(prefers-color-scheme: light)",
+            },
+            {
+                url: "/icon-dark-32x32.png",
+                media: "(prefers-color-scheme: dark)",
+            },
+            {
+                url: "/icon.svg",
+                type: "image/svg+xml",
+            },
+        ],
+        apple: "/apple-icon.png",
+    },
 }
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode
+    children: React.ReactNode
 }>) {
-  return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
-        <LanguageProvider>
-          <AppProvider>
-            {children}
-          </AppProvider>
-        </LanguageProvider>
-        <Analytics />
-      </body>
-    </html>
-  )
+    return (
+        <html lang="en" className="dark">
+            <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
+                <LanguageProvider>
+                    <AppProvider>
+                        {children}
+                    </AppProvider>
+                </LanguageProvider>
+                <Analytics />
+            </body>
+        </html>
+    )
 }
