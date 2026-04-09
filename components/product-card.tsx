@@ -125,7 +125,8 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                         )}
                         <div className="flex gap-2">
                             {item.isBooked && item.bookedBy?.id === user?.id ? (
-                                <button
+                                <Button
+                                    variant="ghost"
                                     onClick={async (e) => {
                                         e.stopPropagation()
                                         setIsBooking(true)
@@ -141,7 +142,7 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                                     }}
                                     disabled={isBooking}
                                     className={cn(
-                                        "h-9 px-3 rounded-full flex items-center justify-center text-xs font-medium transition-smooth",
+                                        "h-9 px-3 rounded-full text-xs font-medium",
                                         "bg-muted text-muted-foreground hover:bg-muted/80"
                                     )}
                                     title="Cancel this booking"
@@ -154,9 +155,11 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                                             {t("common.cancel")}
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             ) : (
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={async (e) => {
                                         e.stopPropagation()
                                         if (!user) {
@@ -182,7 +185,7 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                                     }}
                                     disabled={isBooking || (item.isBooked && item.bookedBy?.id !== user?.id)}
                                     className={cn(
-                                        "w-9 h-9 rounded-full flex items-center justify-center transition-smooth",
+                                        "w-9 h-9 rounded-full",
                                         item.isBooked && item.bookedBy?.id !== user?.id
                                             ? "bg-muted text-muted-foreground cursor-not-allowed"
                                             : "glass hover:bg-muted"
@@ -194,17 +197,19 @@ export function ProductCard({ item, className, variant = "default", viewMode = "
                                     ) : (
                                         <Bookmark className={cn("w-4 h-4", item.isBooked && "fill-current")} />
                                     )}
-                                </button>
+                                </Button>
                             )}
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={(e) => {
                                     e.stopPropagation()
                                     window.open(item.url, '_blank', 'noopener,noreferrer')
                                 }}
-                                className="w-9 h-9 rounded-full glass hover:bg-muted flex items-center justify-center transition-smooth"
+                                className="w-9 h-9 rounded-full glass hover:bg-muted"
                             >
                                 <ExternalLink className="w-4 h-4" />
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

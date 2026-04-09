@@ -50,16 +50,17 @@ export function CreateListModal({ isOpen, onClose, onCreate }: CreateListModalPr
             <Label>{t("wishlist.chooseEmoji")}</Label>
             <div className="flex flex-wrap gap-2">
               {emojis.map((e) => (
-                <button
+                <Button
                   key={e}
+                  variant="ghost"
                   onClick={() => setEmoji(e)}
                   className={cn(
-                    "w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-smooth",
+                    "w-10 h-10 rounded-lg text-xl p-0",
                     emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted hover:bg-muted/80",
                   )}
                 >
                   {e}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -113,11 +114,11 @@ export function CreateListModal({ isOpen, onClose, onCreate }: CreateListModalPr
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose} className="bg-transparent">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={onClose} className="bg-transparent w-full sm:w-auto">
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleCreate} disabled={!name} className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleCreate} disabled={!name} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
               {t("wishlist.createNew")}
             </Button>
           </div>

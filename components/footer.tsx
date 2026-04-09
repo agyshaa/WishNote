@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { Sparkles, Mail, Github, Twitter, Heart, ArrowUp } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/lib/language-context"
+import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
 
@@ -61,9 +62,9 @@ export function Footer() {
             className="relative border-t border-border overflow-hidden"
         >
 
-            <div className="relative z-10 max-w-6xl mx-auto px-4 pt-20 pb-8">
+            <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12 sm:pt-16 md:pt-20 pb-8">
                 {/* Main footer grid */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 mb-8 sm:mb-12 md:mb-16">
                     {/* Brand column */}
                     <div className="md:col-span-5">
                         <Link href="/" className="group inline-flex items-center gap-3 mb-5">
@@ -74,7 +75,7 @@ export function Footer() {
                                 Wish<span className="text-primary">List</span>
                             </span>
                         </Link>
-                        <p className="text-muted-foreground leading-relaxed max-w-sm text-balance mb-6">
+                        <p className="text-muted-foreground leading-relaxed max-w-sm mb-6">
                             {t("footer.description")}
                         </p>
                     </div>
@@ -119,15 +120,16 @@ export function Footer() {
             </div>
 
             {/* Scroll to top button */}
-            <button
-                type="button"
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={scrollToTop}
-                className={`fixed bottom-6 right-6 z-50 w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-all duration-300 hover:opacity-90 active:scale-90 ${showScrollTop ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0 pointer-events-none"
+                className={`fixed bottom-6 right-6 z-50 w-11 h-11 rounded-xl bg-primary text-primary-foreground shadow-lg hover:opacity-90 active:scale-90 ${showScrollTop ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0 pointer-events-none"
                     }`}
                 aria-label="Scroll to top"
             >
                 <ArrowUp className="w-5 h-5" />
-            </button>
+            </Button>
 
             <style jsx>{`
         @keyframes orb-rise {

@@ -75,7 +75,7 @@ export default function SharedWishlistPage() {
                     </Link>
 
                     {/* View Only Banner */}
-                    <div className="bg-secondary/20 border border-secondary/30 rounded-xl p-4 mb-6 flex items-center gap-3">
+                    <div className="bg-secondary/20 border border-secondary/30 rounded-xl p-3 sm:p-4 mb-6 flex items-center gap-3">
                         <Eye className="w-5 h-5 text-secondary" />
                         <div>
                             <p className="font-medium text-foreground">{t("shared.viewOnlyMode")}</p>
@@ -84,9 +84,9 @@ export default function SharedWishlistPage() {
                     </div>
 
                     {/* Header */}
-                    <div className="glass rounded-2xl p-6 mb-6">
-                        <div className="flex items-start gap-4">
-                            <div className="text-4xl">{wishlist.emoji}</div>
+                    <div className="glass rounded-2xl p-4 sm:p-6 mb-6">
+                        <div className="flex items-start gap-3 sm:gap-4">
+                            <div className="text-3xl sm:text-4xl">{wishlist.emoji}</div>
                             <div className="flex-1">
                                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{wishlist.name}</h1>
                                 {wishlist.description && (

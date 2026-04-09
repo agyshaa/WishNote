@@ -68,28 +68,30 @@ export function EditWishlistModal({ isOpen, onClose, wishlist, onSave, isLoading
                     <div className="space-y-2">
                         <Label>{t("wishlist.emoji")}</Label>
                         <div className="relative">
-                            <button
+                            <Button
                                 type="button"
+                                variant="outline"
                                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                className="w-full px-4 py-2 text-3xl text-center border border-border rounded-lg hover:bg-muted transition-smooth flex items-center justify-center"
+                                className="w-full px-4 py-2 text-3xl text-center h-auto"
                             >
                                 {emoji}
-                            </button>
+                            </Button>
 
                             {showEmojiPicker && (
-                                <div className="absolute top-full left-0 right-0 mt-2 p-3 border border-border rounded-lg bg-background shadow-lg z-50 grid grid-cols-5 gap-2">
+                                <div className="absolute top-full left-0 right-0 mt-2 p-3 border border-border rounded-lg bg-background shadow-lg z-50 grid grid-cols-4 sm:grid-cols-5 gap-2">
                                     {EMOJI_LIST.map((e) => (
-                                        <button
+                                        <Button
                                             key={e}
                                             type="button"
+                                            variant="ghost"
                                             onClick={() => {
                                                 setEmoji(e)
                                                 setShowEmojiPicker(false)
                                             }}
-                                            className="text-2xl p-2 hover:bg-muted rounded transition-smooth"
+                                            className="text-2xl p-2 h-auto"
                                         >
                                             {e}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             )}
@@ -141,17 +143,17 @@ export function EditWishlistModal({ isOpen, onClose, wishlist, onSave, isLoading
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2 justify-end pt-4">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={onClose}
                             disabled={isLoading}
-                            className="bg-transparent"
+                            className="bg-transparent w-full sm:w-auto"
                         >
                             {t("common.cancel")}
                         </Button>
-                        <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary/90">
+                        <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                             {isLoading ? t("common.loading") : t("common.save")}
                         </Button>
                     </div>

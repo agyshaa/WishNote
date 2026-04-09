@@ -87,28 +87,29 @@ export default function ProfilePage() {
                     {/* Profile Header */}
                     <ProfileHeader user={userWithWishlists} />
 
-                    <div className="mt-8 flex items-center gap-2 border-b border-border pb-4">
+                    <div className="mt-8 flex items-center gap-2 border-b border-border pb-4 overflow-x-auto scrollbar-hide -mx-4 px-4">
                         {tabs.map((tab) => (
-                            <button
+                            <Button
                                 key={tab.id}
+                                variant="ghost"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-smooth ${activeTab === tab.id
-                                    ? "bg-primary text-primary-foreground"
+                                className={`gap-2 px-3 sm:px-4 py-2 rounded-xl whitespace-nowrap shrink-0 text-sm ${activeTab === tab.id
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" />
                                 {t(tab.labelKey)}
-                            </button>
+                            </Button>
                         ))}
                     </div>
 
                     {/* Tab Content */}
                     {activeTab === "my-lists" ? (
                         <div className="mt-6">
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                                 <h2 className="text-xl font-semibold text-foreground">{t("profile.myWishlists")}</h2>
-                                <Button onClick={() => setShowCreateModal(true)} className="bg-primary hover:bg-primary/90 gap-1">
+                                <Button onClick={() => setShowCreateModal(true)} className="bg-primary hover:bg-primary/90 gap-1 w-full sm:w-auto">
                                     <Plus className="w-4 h-4" />
                                     {t("wishlist.createNew")}
                                 </Button>
@@ -135,15 +136,16 @@ export default function ProfilePage() {
                                     ))}
 
                                     {/* Create New Card */}
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => setShowCreateModal(true)}
-                                        className="glass rounded-2xl border-2 border-dashed border-border hover:border-primary transition-smooth flex flex-col items-center justify-center gap-3 py-12 group"
+                                        className="glass rounded-2xl border-2 border-dashed border-border hover:border-primary h-auto flex flex-col items-center justify-center gap-3 py-12 group"
                                     >
                                         <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/20 transition-smooth">
                                             <Plus className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-smooth" />
                                         </div>
                                         <p className="text-muted-foreground group-hover:text-foreground transition-smooth">{t("wishlist.createNew")}</p>
-                                    </button>
+                                    </Button>
                                 </div>
                             ) : (
                                 <div className="text-center py-16">

@@ -51,7 +51,7 @@ function StepIllustration({ step, isVisible, t }: { step: Step; isVisible: boole
             <div className={`absolute inset-0 ${glowClass} blur-3xl rounded-full opacity-40`} />
 
             {/* Card */}
-            <div className={`relative bg-linear-to-br ${colorClass} rounded-3xl p-8 border border-border/50 backdrop-blur-sm`}>
+            <div className={`relative bg-linear-to-br ${colorClass} rounded-3xl p-4 sm:p-6 md:p-8 border border-border/50 backdrop-blur-sm`}>
                 {/* Step number badge */}
                 <div className="absolute -top-4 -left-4 w-12 h-12 rounded-2xl bg-card border border-border flex items-center justify-center">
                     <span className="text-xl font-bold font-heading text-foreground">{step.id}</span>

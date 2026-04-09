@@ -151,13 +151,14 @@ export default function NotFound() {
                     </div>
 
                     {/* Browser back */}
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => window.history.back()}
-                        className="mt-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                        className="mt-6 text-sm text-muted-foreground hover:text-foreground gap-2"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
                         {t("notFound.goBack")}
-                    </button>
+                    </Button>
                 </div>
             </main>
 

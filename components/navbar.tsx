@@ -59,9 +59,9 @@ export function Navbar() {
                         {/* Language Switcher */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="p-2 hover:bg-muted rounded-lg transition-smooth" title="Language">
-                                    <Globe className="w-5 h-5 text-muted-foreground" />
-                                </button>
+                                <Button variant="ghost" size="icon" className="text-muted-foreground" title="Language">
+                                    <Globe className="w-5 h-5" />
+                                </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="center" sideOffset={8} className="glass w-44">
                                 <DropdownMenuItem onClick={() => setLanguage("uk")} className={`gap-3 ${language === "uk" ? "bg-primary/20" : ""}`}>
@@ -96,7 +96,7 @@ export function Navbar() {
                         ) : user ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="flex items-center gap-2 rounded-full border-2 border-transparent hover:border-primary/50 transition-smooth p-0.5">
+                                    <Button variant="ghost" className="rounded-full border-2 border-transparent hover:border-primary/50 p-0.5 h-auto">
                                         <Image
                                             src={user.avatar || "/placeholder.svg"}
                                             alt={user.name}
@@ -104,7 +104,7 @@ export function Navbar() {
                                             height={32}
                                             className="w-8 h-8 rounded-full object-cover"
                                         />
-                                    </button>
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-56 glass">
                                     <div className="px-3 py-2">
@@ -146,9 +146,9 @@ export function Navbar() {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <button className="md:hidden p-2 text-foreground" onClick={() => setIsOpen(!isOpen)}>
+                    <Button variant="ghost" size="icon" className="md:hidden text-foreground" onClick={() => setIsOpen(!isOpen)}>
                         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Mobile Navigation */}

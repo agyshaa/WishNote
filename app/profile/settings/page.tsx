@@ -125,22 +125,23 @@ export default function SettingsPage() {
                         {/* Sidebar */}
                         <div className="w-full md:w-56 space-y-1">
                             {settingsSections.map((section) => (
-                                <button
+                                <Button
                                     key={section.id}
+                                    variant="ghost"
                                     onClick={() => setActiveSection(section.id)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-smooth ${activeSection === section.id
-                                        ? "bg-primary text-primary-foreground"
+                                    className={`w-full justify-start gap-3 px-4 py-3 rounded-xl h-auto ${activeSection === section.id
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                                         }`}
                                 >
                                     <section.icon className="w-5 h-5" />
                                     {t(section.labelKey)}
-                                </button>
+                                </Button>
                             ))}
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 glass rounded-2xl p-6">
+                        <div className="flex-1 glass rounded-2xl p-4 sm:p-6">
                             {activeSection === "profile" && (
                                 <div className="space-y-6">
                                     <h2 className="text-lg font-semibold text-foreground">{t("settings.profile.title")}</h2>

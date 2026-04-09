@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/language-context"
 import {
     Scale,
@@ -90,7 +91,7 @@ export default function TermsOfServicePage() {
                     </p>
                 </div>
 
-                <div className="flex gap-12">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-12">
                     {/* Sticky sidebar nav (desktop) */}
                     <aside className="hidden lg:block w-56 shrink-0">
                         <div className="sticky top-28">
@@ -183,14 +184,14 @@ export default function TermsOfServicePage() {
                                 {t("termsOfService.readPrivacy")}
                                 <ChevronRight className="w-4 h-4" />
                             </Link>
-                            <button
-                                type="button"
+                            <Button
+                                variant="ghost"
                                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                                className="text-sm text-muted-foreground hover:text-foreground transition-smooth inline-flex items-center gap-1"
+                                className="text-sm text-muted-foreground hover:text-foreground gap-1"
                             >
                                 <ArrowUp className="w-4 h-4" />
                                 {t("termsOfService.backToTop")}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

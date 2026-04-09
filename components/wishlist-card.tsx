@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { Lock, Globe, MoreHorizontal, Edit3, Trash2, Share2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 interface WishlistCardProps {
@@ -81,9 +82,9 @@ export function WishlistCard({ wishlist, className, editable = false, onShare, o
                         {editable && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                                    <button className="p-1 hover:bg-muted rounded-lg transition-smooth">
+                                    <Button variant="ghost" size="icon-sm" className="h-7 w-7">
                                         <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                                    </button>
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40">
                                     <DropdownMenuItem

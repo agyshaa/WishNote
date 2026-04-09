@@ -188,13 +188,15 @@ function ResetPasswordContent() {
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             required
                                         />
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-sm"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                         >
                                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -210,13 +212,15 @@ function ResetPasswordContent() {
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             required
                                         />
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-sm"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                         >
                                             {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
 

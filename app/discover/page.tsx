@@ -219,7 +219,7 @@ export default function DiscoverPage() {
                                 <Button
                                     onClick={handleInspireMe}
                                     disabled={displayItems.length === 0}
-                                    className="px-8 shadow-md"
+                                    className="px-6 sm:px-8 shadow-md"
                                 >
                                     <Sparkles className="w-4 h-4" />
                                     {t("discover.inspireMe")}
@@ -252,36 +252,42 @@ export default function DiscoverPage() {
 
                                 {/* View Mode Toggles */}
                                 <div className="hidden sm:flex items-center p-1 bg-muted/50 rounded-xl border border-border/50 self-start lg:self-auto">
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-sm"
                                         onClick={() => setViewMode("grid-lg")}
                                         className={cn(
-                                            "p-2.5 rounded-lg transition-smooth flex items-center gap-2 text-sm font-medium",
+                                            "rounded-lg",
                                             viewMode === "grid-lg" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                         )}
                                         title="Large Grid"
                                     >
                                         <Grid2X2 className="w-4 h-4" />
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-sm"
                                         onClick={() => setViewMode("grid-sm")}
                                         className={cn(
-                                            "p-2.5 rounded-lg transition-smooth flex items-center gap-2 text-sm font-medium",
+                                            "rounded-lg",
                                             viewMode === "grid-sm" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                         )}
                                         title="Small Grid"
                                     >
                                         <LayoutGrid className="w-4 h-4" />
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-sm"
                                         onClick={() => setViewMode("list")}
                                         className={cn(
-                                            "p-2.5 rounded-lg transition-smooth flex items-center gap-2 text-sm font-medium",
+                                            "rounded-lg",
                                             viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                         )}
                                         title="List View"
                                     >
                                         <List className="w-4 h-4" />
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
@@ -293,30 +299,30 @@ export default function DiscoverPage() {
                                     {filters.searchQuery && (
                                         <Badge variant="secondary" className="flex items-center gap-1 pr-1.5 bg-muted text-foreground hover:bg-muted/80 border border-border/50">
                                             "{filters.searchQuery}"
-                                            <button onClick={() => removeFilter('searchQuery')} className="hover:bg-background/50 rounded-full p-0.5"><X className="w-3 h-3" /></button>
+                                            <Button variant="ghost" onClick={() => removeFilter('searchQuery')} className="h-auto w-auto p-0.5 min-w-0 rounded-full hover:bg-background/50"><X className="w-3 h-3" /></Button>
                                         </Badge>
                                     )}
 
                                     {filters.categories.map(cat => (
                                         <Badge key={cat} variant="secondary" className="flex items-center gap-1 pr-1.5 bg-muted text-foreground hover:bg-muted/80 border border-border/50">
                                             {cat}
-                                            <button onClick={() => toggleCategory(cat)} className="hover:bg-background/50 rounded-full p-0.5"><X className="w-3 h-3" /></button>
+                                            <Button variant="ghost" onClick={() => toggleCategory(cat)} className="h-auto w-auto p-0.5 min-w-0 rounded-full hover:bg-background/50"><X className="w-3 h-3" /></Button>
                                         </Badge>
                                     ))}
 
                                     {(filters.minPrice > 0 || filters.maxPrice < maxPrice) && (
                                         <Badge variant="secondary" className="flex items-center gap-1 pr-1.5 bg-muted text-foreground hover:bg-muted/80 border border-border/50">
                                             ₴{filters.minPrice} - ₴{filters.maxPrice}
-                                            <button onClick={() => {
+                                            <Button variant="ghost" onClick={() => {
                                                 setFilters(prev => ({ ...prev, minPrice: 0, maxPrice: maxPrice }))
-                                            }} className="hover:bg-background/50 rounded-full p-0.5"><X className="w-3 h-3" /></button>
+                                            }} className="h-auto w-auto p-0.5 min-w-0 rounded-full hover:bg-background/50"><X className="w-3 h-3" /></Button>
                                         </Badge>
                                     )}
 
                                     {filters.sortBy !== "newest" && (
                                         <Badge variant="secondary" className="flex items-center gap-1 pr-1.5 bg-muted text-foreground hover:bg-muted/80 border border-border/50">
                                             {filters.sortBy === 'price-asc' ? t("discover.priceLow") : t("discover.priceHigh")}
-                                            <button onClick={() => removeFilter('sortBy')} className="hover:bg-background/50 rounded-full p-0.5"><X className="w-3 h-3" /></button>
+                                            <Button variant="ghost" onClick={() => removeFilter('sortBy')} className="h-auto w-auto p-0.5 min-w-0 rounded-full hover:bg-background/50"><X className="w-3 h-3" /></Button>
                                         </Badge>
                                     )}
 
@@ -338,9 +344,9 @@ export default function DiscoverPage() {
                                                 <SlidersHorizontal className="w-5 h-5 text-primary" />
                                                 {t("discover.advancedFilters")}
                                             </h3>
-                                            <button onClick={() => setShowFilters(false)} className="p-2 hover:bg-muted rounded-full transition-colors">
-                                                <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
-                                            </button>
+                                            <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)} className="rounded-full text-muted-foreground hover:text-foreground">
+                                                <X className="w-5 h-5" />
+                                            </Button>
                                         </div>
 
                                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

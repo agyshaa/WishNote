@@ -89,13 +89,14 @@ export default function Error({
                     </div>
 
                     {/* Error details toggle */}
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => setShowDetails(!showDetails)}
-                        className="mt-8 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-smooth"
+                        className="mt-8 text-sm text-muted-foreground hover:text-foreground gap-2"
                     >
                         <Bug className="w-3.5 h-3.5" />
                         {showDetails ? t("errorPage.hideDetails") : t("errorPage.showDetails")}
-                    </button>
+                    </Button>
 
                     {showDetails && (
                         <div className="mt-4 w-full p-4 rounded-xl glass text-left overflow-auto max-h-48">

@@ -178,9 +178,10 @@ function EndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
 
     return (
         <div className="glass rounded-2xl p-6 mb-4 hover:border-primary/50 transition-colors">
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between"
+                className="w-full flex items-center justify-between h-auto p-0 hover:bg-transparent"
             >
                 <div className="flex items-center gap-4">
                     <MethodBadge method={endpoint.method} />
@@ -201,7 +202,7 @@ function EndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
                         }`}
                     />
                 </div>
-            </button>
+            </Button>
 
             {expanded && (
                 <div className="mt-6 pt-6 border-t border-border space-y-6">
@@ -246,20 +247,22 @@ function EndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
                                         <pre className="font-mono text-xs text-muted-foreground overflow-x-auto">
                                             {endpoint.example.request}
                                         </pre>
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-sm"
                                             onClick={() => {
                                                 if (endpoint.example?.request) {
                                                     handleCopy(endpoint.example.request)
                                                 }
                                             }}
-                                            className="absolute top-2 right-2 p-2 hover:bg-muted rounded transition-colors"
+                                            className="absolute top-2 right-2 text-muted-foreground"
                                         >
                                             {copied ? (
                                                 <Check className="w-4 h-4 text-green-400" />
                                             ) : (
-                                                <Copy className="w-4 h-4 text-muted-foreground" />
+                                                <Copy className="w-4 h-4" />
                                             )}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             )}
@@ -271,20 +274,22 @@ function EndpointCard({ endpoint }: { endpoint: APIEndpoint }) {
                                         <pre className="font-mono text-xs text-muted-foreground overflow-x-auto">
                                             {endpoint.example.response}
                                         </pre>
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-sm"
                                             onClick={() => {
                                                 if (endpoint.example?.response) {
                                                     handleCopy(endpoint.example.response)
                                                 }
                                             }}
-                                            className="absolute top-2 right-2 p-2 hover:bg-muted rounded transition-colors"
+                                            className="absolute top-2 right-2 text-muted-foreground"
                                         >
                                             {copied ? (
                                                 <Check className="w-4 h-4 text-green-400" />
                                             ) : (
-                                                <Copy className="w-4 h-4 text-muted-foreground" />
+                                                <Copy className="w-4 h-4" />
                                             )}
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             )}

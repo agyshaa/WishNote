@@ -61,9 +61,9 @@ export function WishlistItemCard({ item, editable = false, onBook, onDelete, onM
                         {editable && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="p-1 hover:bg-muted rounded-lg transition-smooth">
+                                    <Button variant="ghost" size="icon-sm" className="h-7 w-7">
                                         <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                                    </button>
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40">
                                     <DropdownMenuItem onClick={() => onEdit?.(item)}>

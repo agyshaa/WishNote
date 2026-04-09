@@ -74,13 +74,15 @@ export function SharedListsTab() {
                             className="bg-muted border-border h-12 font-mono tracking-wider uppercase"
                         />
                         {accessKey && (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
+                                size="icon-sm"
                                 onClick={() => setAccessKey("")}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-smooth"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
                                 <X className="w-4 h-4" />
-                            </button>
+                            </Button>
                         )}
                     </div>
                     <Button type="submit" className="h-12 px-6 bg-primary hover:bg-primary/90" disabled={!accessKey || isLoading}>
@@ -121,13 +123,15 @@ export function SharedListsTab() {
                                 <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
                                     {t("shared.viewOnly")}
                                 </div>
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
                                     onClick={() => removeSharedList(shared.id)}
-                                    className="absolute top-3 right-12 p-1.5 rounded-full glass opacity-0 group-hover:opacity-100 transition-smooth hover:bg-destructive/20"
+                                    className="absolute top-3 right-12 rounded-full glass opacity-0 group-hover:opacity-100 hover:bg-destructive/20"
                                     title={t("common.delete")}
                                 >
                                     <X className="w-4 h-4 text-muted-foreground" />
-                                </button>
+                                </Button>
                             </div>
                         ))}
                     </div>

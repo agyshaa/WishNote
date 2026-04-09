@@ -104,7 +104,7 @@ export default async function PublicProfilePage({ params }: PublicProfileProps) 
                         </div>
 
                         {/* Profile info */}
-                        <div className="px-8 pb-8 -mt-16 relative z-10">
+                        <div className="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8 -mt-16 relative z-10">
                             <div className="flex flex-col md:flex-row gap-6 items-start">
                                 {/* Avatar */}
                                 <div className="relative group/avatar">
@@ -124,7 +124,7 @@ export default async function PublicProfilePage({ params }: PublicProfileProps) 
                                 </div>
 
                                 {/* User info */}
-                                <div className="flex-1 pt-4 md:pt-8">
+                                <div className="flex-1 pt-2 sm:pt-4 md:pt-8">
                                     <div className="flex flex-wrap items-center gap-3 mb-2">
                                         <h1 className="text-3xl md:text-4xl font-bold font-heading text-foreground">
                                             {user.name}
@@ -138,7 +138,7 @@ export default async function PublicProfilePage({ params }: PublicProfileProps) 
                                         </p>
                                     )}
 
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50">
                                             <CalendarDays className="w-4 h-4" />
                                             <span>Joined {formattedDate}</span>

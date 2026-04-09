@@ -219,16 +219,17 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
                                 { value: "medium", label: t("item.want"), color: "bg-secondary" },
                                 { value: "low", label: t("item.niceToHave"), color: "bg-muted-foreground" },
                             ].map((p) => (
-                                <button
+                                <Button
                                     key={p.value}
+                                    variant="ghost"
                                     onClick={() => setPriority(p.value)}
-                                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-smooth ${priority === p.value
-                                        ? `${p.color} text-background`
+                                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium ${priority === p.value
+                                        ? `${p.color} text-background hover:opacity-90`
                                         : "bg-muted text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     {p.label}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
@@ -248,11 +249,11 @@ export function AddItemModal({ isOpen, onClose, onAdd }: AddItemModalProps) {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="outline" onClick={handleClose} className="bg-transparent">
+                    <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
+                        <Button variant="outline" onClick={handleClose} className="bg-transparent w-full sm:w-auto">
                             {t("common.cancel")}
                         </Button>
-                        <Button onClick={handleAdd} disabled={!parsed} className="bg-primary hover:bg-primary/90">
+                        <Button onClick={handleAdd} disabled={!parsed} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
                             {t("item.addToList")}
                         </Button>
                     </div>

@@ -63,12 +63,14 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                     <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-muted cursor-pointer hover:opacity-80 transition-opacity">
                         <Image src={user.avatar || "/placeholder.svg"} alt={user.name} fill className="object-cover" />
                     </div>
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={handleAvatarClick}
-                        className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground transition-smooth hover:bg-primary/90"
+                        className="absolute -bottom-1 -right-1 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                         <Edit3 className="w-4 h-4" />
-                    </button>
+                    </Button>
                     <input
                         ref={fileInputRef}
                         type="file"
