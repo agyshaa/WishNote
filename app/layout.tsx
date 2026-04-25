@@ -1,7 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter, Space_Grotesk } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { AppProvider } from "@/lib/store" // Import AppProvider
 import { LanguageProvider } from "@/lib/language-context"
 import "./globals.css"
@@ -50,7 +49,6 @@ export default function RootLayout({
                         {children}
                     </AppProvider>
                 </LanguageProvider>
-                <Analytics />
             </body>
         </html>
     )
